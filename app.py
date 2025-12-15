@@ -31,7 +31,7 @@ st.caption("Zakódujte si své kouzlo — 11-gon rules enforced, one word per gl
 # ──────────────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def init_engine():
-    font_path = r".\fonts\NotoSansPhoenician-Regular.ttf"
+    font_path = Path("fonts/NotoSansPhoenician-Regular.ttf").as_posix()
     g = Phoenician11System(glyph_font_path=font_path)
 
     # Tagged meanings for fallback only (LEXICON below is the primary source of words)
