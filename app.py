@@ -8,7 +8,10 @@ import math
 from typing import Dict, List, Tuple
 
 import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib import font_manager as fm
 
 from phoenician_11gon_system import (
     Phoenician11System,

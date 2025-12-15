@@ -33,10 +33,7 @@
 #   g.draw_glyphs(seq, S=3, start_shift=2, savepath='glyphs.png')
 #   g.print_spell_meanings_and_cost(seq, S=3, start_shift=2)
 #
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-from matplotlib import font_manager as fm
+
 
 TOP_ANGLE_DEG = 90.0
 N_VERT = 11
