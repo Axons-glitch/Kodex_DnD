@@ -4,3 +4,5 @@ matplotlib~=3.10.8
 pandas~=2.3.3
 reportlab
 pathlib
+itertools
+math
