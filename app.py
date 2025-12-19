@@ -99,18 +99,19 @@ LEXICON: Dict[int, Dict[str, str]] = {
 
 # Presets (password-locked legacy)
 GOOD_SPELLS = {
-    "Copperfield_Good": ["He","Beth","Daleth","Yod","Kaph","Waw","Heth","Gimel","Teth","Zayin","Lamed"],
-    "Scholars_Good":    ["Lamed","Ayin","Pe","Mem","Qoph","Samekh","Resh","Shin","Taw","Nun","Tsade"],
-    "Verdant_Good":     ["Mem","Nun","Samekh","Teth","Ayin","Lamed","Yod","Kaph","Pe","Qoph","Tsade"],
-    "Span_Good":        ["Yod","Kaph","Samekh","Heth","Waw","Teth","Lamed","Mem","Zayin","Nun","Ayin"],
-    "River_Good":       ["Mem","Heth","Waw","Samekh","Yod","Kaph","Teth","Lamed","Ayin","Zayin","Nun"],
+    "Copperfield_Good": ["Beth","Yod","He","Lamed","Gimel","Heth","Kaph","Daleth","Teth","Waw","Zayin"],
+    "Scholars_Good":    ["Lamed","Shin","Mem","Tsade","Ayin","Pe","Qoph","Samekh","Taw","Nun","Resh"],
+    "Verdant_Good":     ["Mem","Ayin","Samekh","Yod","Qoph","Lamed","Pe","Teth","Kaph","Nun","Tsade"],
+    "Span_Good":        ["Yod","Heth","Samekh","Zayin","Lamed","Ayin","Mem","Teth","Kaph","Nun","Waw"],
+    "River_Good":       ["Waw","Nun","Yod","Ayin","Heth","Samekh","Lamed","Zayin","Mem","Teth","Kaph"],
 }
+
 EVIL_SPELLS = {
-    "Copperfield_Evil": ["He","Beth","Daleth","Yod","Kaph","Waw","Heth","Gimel","Teth","Zayin","Aleph"],
-    "Scholars_Evil":    ["Lamed","Ayin","Pe","Mem","Qoph","Samekh","Resh","Shin","Kaph","Nun","Tsade"],
-    "Verdant_Evil":     ["Mem","Nun","Samekh","Resh","Ayin","Lamed","Yod","Kaph","Pe","Qoph","Tsade"],
-    "Span_Evil":        ["Yod","Kaph","Samekh","Heth","Pe","Teth","Lamed","Mem","Zayin","Nun","Ayin"],
-    "River_Evil":       ["Mem","Heth","Pe","Samekh","Yod","Kaph","Teth","Lamed","Ayin","Zayin","Nun"],
+    "Copperfield_Evil": ["Beth","Yod","Aleph","Lamed","Gimel","Heth","Kaph","Daleth","Teth","Waw","Zayin"],
+    "Scholars_Evil":    ["Lamed","Shin","Mem","Tsade","Ayin","Pe","Qoph","Samekh","Kaph","Nun","Resh"],
+    "Verdant_Evil":     ["Mem","Ayin","Samekh","Yod","Qoph","Lamed","Pe","Resh","Kaph","Nun","Tsade"],
+    "Span_Evil":        ["Yod","Heth","Samekh","Zayin","Lamed","Ayin","Mem","Teth","Kaph","Nun","Pe"],
+    "River_Evil":       ["Heth","Nun","Yod","Ayin","Pe","Samekh","Lamed","Zayin","Mem","Teth","Kaph"],
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -1053,3 +1054,111 @@ if seq_path:
     st.dataframe(ring_df, hide_index=True, width="stretch")
 else:
     st.info("Začněte klikáním na vrcholy (V1..V11) v požadovaném pořadí. Poté nastavte start_shift a projíždějte S.")
+
+
+# ─────────────────────────────────────────────────────────────
+# 🔮 Semantic Meaning Map (Venn-style)
+# ─────────────────────────────────────────────────────────────
+import itertools
+import math
+
+st.markdown("---")
+st.header("🜂 Sémantická mapa významů glyfů")
+
+roles = ["noun", "verb", "adj", "adv"]
+role_labels = {
+    "noun": "Podstatné jméno",
+    "verb": "Sloveso",
+    "adj":  "Přídavné jméno",
+    "adv":  "Příslovce",
+}
+
+# --- Collect glyph role membership ---
+glyph_roles = {}
+for j in range(1, 23):
+    roles_here = []
+    if j in LEXICON:
+        for r in roles:
+            if r in LEXICON[j] and LEXICON[j][r]:
+                roles_here.append(r)
+    if roles_here:
+        glyph_roles[j] = tuple(sorted(roles_here))
+
+if not glyph_roles:
+    st.info("Lexikon neobsahuje žádné sémantické role.")
+else:
+    # --- Assign each unique role-combination a position on a circle ---
+    combos = sorted(set(glyph_roles.values()), key=lambda x: (len(x), x))
+    combo_index = {c: i for i, c in enumerate(combos)}
+
+    radius_base = 1.0
+    fig = go.Figure()
+
+    # --- Color per role combination ---
+    palette = [
+        "#636EFA", "#EF553B", "#00CC96", "#AB63FA",
+        "#FFA15A", "#19D3F3", "#FF6692", "#B6E880",
+        "#FF97FF", "#FECB52",
+    ]
+
+    def combo_color(c):
+        return palette[combo_index[c] % len(palette)]
+
+    # --- Place glyphs ---
+    for c in combos:
+        idxs = [j for j, rc in glyph_roles.items() if rc == c]
+        angle_step = 2 * math.pi / max(len(idxs), 1)
+        base_angle = combo_index[c] * 0.7
+
+        for k, j in enumerate(idxs):
+            r = radius_base + 0.25 * (len(c) - 1)
+            ang = base_angle + k * angle_step
+
+            x = r * math.cos(ang)
+            y = r * math.sin(ang)
+
+            label = (
+                f"{phoenician_glyph(j)} {PHOENICIAN_NAMES_22[j-1]}<br>"
+                f"<b>Role:</b> {', '.join(role_labels[r] for r in c)}<br>"
+                + "<br>".join(f"{role_labels[r]}: {LEXICON[j][r]}" for r in c)
+            )
+
+            fig.add_trace(go.Scatter(
+                x=[x], y=[y],
+                mode="markers+text",
+                text=[phoenician_glyph(j)],
+                textposition="middle center",
+                marker=dict(
+                    size=40,
+                    color=combo_color(c),
+                    line=dict(width=2, color="black")
+                ),
+                hovertemplate=label,
+                showlegend=False
+            ))
+
+    # --- Legend ---
+    for c in combos:
+        fig.add_trace(go.Scatter(
+            x=[None], y=[None],
+            mode="markers",
+            marker=dict(size=14, color=combo_color(c)),
+            name=" + ".join(role_labels[r] for r in c),
+        ))
+
+    fig.update_layout(
+        width=700,
+        height=700,
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        title="Překryv významových rolí glyfů",
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.caption(
+        "Každý glyf je zobrazen jednou. Barva značí kombinaci rolí "
+        "(podstatné jméno / sloveso / přídavné jméno / příslovce)."
+    )
