@@ -8,7 +8,7 @@ import math
 from typing import Dict, List, Tuple
 from pathlib import Path
 
-import itertools
+
 
 
 import streamlit as st
@@ -16,7 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib import font_manager as fm
-import plotly.graph_objects as go
+
 
 from phoenician_11gon_system import (
     Phoenician11System,
@@ -1065,8 +1065,7 @@ else:
 # ─────────────────────────────────────────────────────────────
 # 🔮 Semantic Meaning Map (Venn-style)
 # ─────────────────────────────────────────────────────────────
-import itertools
-import math
+
 
 DND_DOMAINS = [
     "Fire",
