@@ -6,3 +6,4 @@ reportlab
 pathlib
 itertools
 math
+plotly

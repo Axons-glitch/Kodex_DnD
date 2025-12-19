@@ -8,11 +8,15 @@ import math
 from typing import Dict, List, Tuple
 from pathlib import Path
 
+import itertools
+
+
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib import font_manager as fm
+import plotly.graph_objects as go
 
 from phoenician_11gon_system import (
     Phoenician11System,
@@ -99,20 +103,22 @@ LEXICON: Dict[int, Dict[str, str]] = {
 
 # Presets (password-locked legacy)
 GOOD_SPELLS = {
-    "Copperfield_Good": ["Beth","Yod","He","Lamed","Gimel","Heth","Kaph","Daleth","Teth","Waw","Zayin"],
-    "Scholars_Good":    ["Lamed","Shin","Mem","Tsade","Ayin","Pe","Qoph","Samekh","Taw","Nun","Resh"],
-    "Verdant_Good":     ["Mem","Ayin","Samekh","Yod","Qoph","Lamed","Pe","Teth","Kaph","Nun","Tsade"],
-    "Span_Good":        ["Yod","Heth","Samekh","Zayin","Lamed","Ayin","Mem","Teth","Kaph","Nun","Waw"],
-    "River_Good":       ["Waw","Nun","Yod","Ayin","Heth","Samekh","Lamed","Zayin","Mem","Teth","Kaph"],
+    "Copperfield_Good": ["Beth","Daleth","Yod","Waw","Gimel","Kaph","Zayin","Lamed","Teth","He","Heth"],
+    "Scholars_Good":    ["Lamed","Pe","Qoph","Mem","Tsade","Samekh","Taw","Ayin","Resh","Nun","Shin"],
+    "Verdant_Good":     ["Mem","Ayin","Lamed","Tsade","Yod","Samekh","Qoph","Kaph","Nun","Pe","Teth"],
+    "Span_Good":        ["Yod","Heth","Lamed","Samekh","Zayin","Mem","Teth","Nun","Waw","Kaph","Ayin"],
+    "River_Good":       ["Mem","Waw","Lamed","Ayin","Nun","Heth","Kaph","Teth","Zayin","Yod","Samekh"],
 }
 
 EVIL_SPELLS = {
-    "Copperfield_Evil": ["Beth","Yod","Aleph","Lamed","Gimel","Heth","Kaph","Daleth","Teth","Waw","Zayin"],
-    "Scholars_Evil":    ["Lamed","Shin","Mem","Tsade","Ayin","Pe","Qoph","Samekh","Kaph","Nun","Resh"],
-    "Verdant_Evil":     ["Mem","Ayin","Samekh","Yod","Qoph","Lamed","Pe","Resh","Kaph","Nun","Tsade"],
-    "Span_Evil":        ["Yod","Heth","Samekh","Zayin","Lamed","Ayin","Mem","Teth","Kaph","Nun","Pe"],
-    "River_Evil":       ["Heth","Nun","Yod","Ayin","Pe","Samekh","Lamed","Zayin","Mem","Teth","Kaph"],
+    "Copperfield_Evil": ["Beth","Daleth","Yod","Waw","Gimel","Kaph","Zayin","Aleph","Teth","He","Heth"],
+    "Scholars_Evil":    ["Lamed","Pe","Qoph","Mem","Tsade","Samekh","Kaph","Ayin","Resh","Nun","Shin"],
+    "Verdant_Evil":     ["Mem","Ayin","Lamed","Tsade","Yod","Samekh","Qoph","Kaph","Nun","Pe","Resh"],
+    "Span_Evil":        ["Yod","Heth","Lamed","Samekh","Zayin","Mem","Teth","Nun","Pe","Kaph","Ayin"],
+    "River_Evil":       ["Mem","Pe","Lamed","Ayin","Nun","Heth","Kaph","Teth","Zayin","Yod","Samekh"],
 }
+
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Meaning-driven D&D preset generator (seeded, avoids neighbors where possible)
@@ -1062,103 +1068,77 @@ else:
 import itertools
 import math
 
-st.markdown("---")
-st.header("🜂 Sémantická mapa významů glyfů")
+DND_DOMAINS = [
+    "Fire",
+    "Water",
+    "Air",
+    "Earth",
+    "Life",
+    "Death",
+    "Light",
+    "Darkness",
+    "Knowledge",
+    "Mind",
+    "Binding",
+    "Motion",
+    "Time",
+    "Protection",
+    "Transformation",
+    "Communication",
+]
 
-roles = ["noun", "verb", "adj", "adv"]
-role_labels = {
-    "noun": "Podstatné jméno",
-    "verb": "Sloveso",
-    "adj":  "Přídavné jméno",
-    "adv":  "Příslovce",
+GLYPH_DOMAINS = {
+    "Aleph":   ["Air", "Life", "Origin"],
+    "Beth":    ["Earth", "Protection", "Containment"],
+    "Gimel":   ["Motion", "Travel"],
+    "Daleth":  ["Transition", "Transformation"],
+    "He":      ["Air", "Light", "Revelation"],
+    "Waw":     ["Binding", "Connection", "Time"],
+    "Zayin":   ["Fire", "Conflict"],
+    "Heth":    ["Protection", "Earth"],
+    "Teth":    ["Binding", "Transformation"],
+    "Yod":     ["Motion", "Creation"],
+    "Kaph":    ["Protection", "Control"],
+    "Lamed":   ["Knowledge", "Communication"],
+    "Mem":     ["Water", "Life"],
+    "Nun":     ["Water", "Growth", "Life"],
+    "Samekh":  ["Binding", "Support"],
+    "Ayin":    ["Perception", "Mind"],
+    "Pe":      ["Communication", "Power"],
+    "Tsade":   ["Judgment", "Constraint"],
+    "Qoph":    ["Darkness", "Mind"],
+    "Resh":    ["Mind", "Authority"],
+    "Shin":    ["Fire", "Destruction"],
+    "Taw":     ["Binding", "Fate", "Time"],
 }
 
-# --- Collect glyph role membership ---
-glyph_roles = {}
-for j in range(1, 23):
-    roles_here = []
-    if j in LEXICON:
-        for r in roles:
-            if r in LEXICON[j] and LEXICON[j][r]:
-                roles_here.append(r)
-    if roles_here:
-        glyph_roles[j] = tuple(sorted(roles_here))
+# ─────────────────────────────────────────────────────────────
+# 🐉 D&D Semantic Domain Map (Legendary-consistent)
+# ─────────────────────────────────────────────────────────────
+st.markdown("---")
+st.header("📜 Sémantické domény glyfů (D&D)")
 
-if not glyph_roles:
-    st.info("Lexikon neobsahuje žádné sémantické role.")
-else:
-    # --- Assign each unique role-combination a position on a circle ---
-    combos = sorted(set(glyph_roles.values()), key=lambda x: (len(x), x))
-    combo_index = {c: i for i, c in enumerate(combos)}
+rows = []
 
-    radius_base = 1.0
-    fig = go.Figure()
+for i, name in enumerate(PHOENICIAN_NAMES_22, start=1):
+    domains = GLYPH_DOMAINS.get(name, [])
+    rows.append({
+        "Glyf": phoenician_glyph(i),
+        "Název": name,
+        "Domény": ", ".join(domains) if domains else "—",
+    })
 
-    # --- Color per role combination ---
-    palette = [
-        "#636EFA", "#EF553B", "#00CC96", "#AB63FA",
-        "#FFA15A", "#19D3F3", "#FF6692", "#B6E880",
-        "#FF97FF", "#FECB52",
-    ]
+df_domains = pd.DataFrame(rows)
 
-    def combo_color(c):
-        return palette[combo_index[c] % len(palette)]
+st.dataframe(
+    df_domains,
+    hide_index=True,
+    use_container_width=True,
+)
 
-    # --- Place glyphs ---
-    for c in combos:
-        idxs = [j for j, rc in glyph_roles.items() if rc == c]
-        angle_step = 2 * math.pi / max(len(idxs), 1)
-        base_angle = combo_index[c] * 0.7
+st.caption(
+    "Každý glyf je přiřazen k jedné nebo více sémantickým doménám "
+    "odpovídajícím D&D konceptům. Tabulka je kanonická a konzistentní "
+    "s legendárními kouzly."
+)
 
-        for k, j in enumerate(idxs):
-            r = radius_base + 0.25 * (len(c) - 1)
-            ang = base_angle + k * angle_step
-
-            x = r * math.cos(ang)
-            y = r * math.sin(ang)
-
-            label = (
-                f"{phoenician_glyph(j)} {PHOENICIAN_NAMES_22[j-1]}<br>"
-                f"<b>Role:</b> {', '.join(role_labels[r] for r in c)}<br>"
-                + "<br>".join(f"{role_labels[r]}: {LEXICON[j][r]}" for r in c)
-            )
-
-            fig.add_trace(go.Scatter(
-                x=[x], y=[y],
-                mode="markers+text",
-                text=[phoenician_glyph(j)],
-                textposition="middle center",
-                marker=dict(
-                    size=40,
-                    color=combo_color(c),
-                    line=dict(width=2, color="black")
-                ),
-                hovertemplate=label,
-                showlegend=False
-            ))
-
-    # --- Legend ---
-    for c in combos:
-        fig.add_trace(go.Scatter(
-            x=[None], y=[None],
-            mode="markers",
-            marker=dict(size=14, color=combo_color(c)),
-            name=" + ".join(role_labels[r] for r in c),
-        ))
-
-    fig.update_layout(
-        width=700,
-        height=700,
-        xaxis=dict(visible=False),
-        yaxis=dict(visible=False),
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-        title="Překryv významových rolí glyfů",
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.caption(
-        "Každý glyf je zobrazen jednou. Barva značí kombinaci rolí "
-        "(podstatné jméno / sloveso / přídavné jméno / příslovce)."
-    )
