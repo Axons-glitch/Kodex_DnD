@@ -106,7 +106,7 @@ GOOD_SPELLS = {
     "Copperfield_Good": ["Beth","Daleth","Yod","Waw","Gimel","Kaph","Zayin","Lamed","Teth","He","Heth"],
     "Scholars_Good":    ["Lamed","Pe","Qoph","Mem","Tsade","Samekh","Taw","Ayin","Resh","Nun","Shin"],
     "Verdant_Good":     ["Mem","Ayin","Lamed","Tsade","Yod","Samekh","Qoph","Kaph","Nun","Pe","Teth"],
-    "Span_Good":        ["Yod","Heth","Lamed","Samekh","Zayin","Mem","Teth","Nun","Waw","Kaph","Ayin"],
+    "Span_Good":        ["Yod","Zayin","Lamed","Samekh","Heth","Mem","Teth","Nun","Waw","Kaph","Ayin"],
     "River_Good":       ["Mem","Waw","Lamed","Ayin","Nun","Heth","Kaph","Teth","Zayin","Yod","Samekh"],
 }
 
@@ -114,7 +114,7 @@ EVIL_SPELLS = {
     "Copperfield_Evil": ["Beth","Daleth","Yod","Waw","Gimel","Kaph","Zayin","Aleph","Teth","He","Heth"],
     "Scholars_Evil":    ["Lamed","Pe","Qoph","Mem","Tsade","Samekh","Kaph","Ayin","Resh","Nun","Shin"],
     "Verdant_Evil":     ["Mem","Ayin","Lamed","Tsade","Yod","Samekh","Qoph","Kaph","Nun","Pe","Resh"],
-    "Span_Evil":        ["Yod","Heth","Lamed","Samekh","Zayin","Mem","Teth","Nun","Pe","Kaph","Ayin"],
+    "Span_Evil":        ["Yod","Zayin","Lamed","Samekh","Heth","Mem","Teth","Nun","Pe","Kaph","Ayin"],
     "River_Evil":       ["Mem","Pe","Lamed","Ayin","Nun","Heth","Kaph","Teth","Zayin","Yod","Samekh"],
 }
 
