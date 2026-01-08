@@ -728,7 +728,7 @@ if dnd_key != "—":
 st.sidebar.markdown("---")
 st.sidebar.caption("Legendární kouzla (zamčeno heslem)")
 pwd = st.sidebar.text_input("Heslo", type="password", placeholder="•••••")
-if pwd.strip() == "alfik":
+if pwd.strip() == "alfik1236987+":
     tab_good, tab_evil = st.sidebar.tabs(["Good","Evil"])
     with tab_good:
         gkey = st.selectbox("GOOD", ["—"] + list(GOOD_SPELLS.keys()))
